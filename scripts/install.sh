@@ -13,6 +13,17 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Ask user for node identifier
+read -rp "Enter server domain (e.g. pizero-1.local): " SERVER
+if ! [[ "$SERVER" =~ ^[a-zA-Z0-9.-]+(:[0-9]+)?$ ]]; then
+  echo "Invalid server address"
+  exit 1
+fi
+
+read -rp "Use HTTPS? [y/N]: " USE_HTTPS
+PROTO="http"
+[[ "${USE_HTTPS}" =~ ^[Yy]$ ]] && PROTO="https"
+
 # Build (assumes Go is installed)
 GO_BIN="${GO_BIN:-}"
 if [[ -z "${GO_BIN}" ]]; then
@@ -30,17 +41,6 @@ echo "==> Building binary"
 "${GO_BIN}" build -o "${BIN_NAME}" ./cmd/agent
 
 echo "==> Installing ${APP_NAME}"
-
-# Ask user for node identifier
-read -rp "Enter server domain (e.g. pizero-1.local): " SERVER
-if ! [[ "$SERVER" =~ ^[a-zA-Z0-9.-]+(:[0-9]+)?$ ]]; then
-  echo "Invalid server address"
-  exit 1
-fi
-
-read -rp "Use HTTPS? [y/N]: " USE_HTTPS
-PROTO="http"
-[[ "${USE_HTTPS}" =~ ^[Yy]$ ]] && PROTO="https"
 
 # Install binary
 echo "==> Installing binary to ${INSTALL_DIR}"
