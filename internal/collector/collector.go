@@ -14,7 +14,7 @@ type Collector struct {
 
 type Reader interface {
 	Name() string
-	Read() (model.MeasurementValue, error)
+	Read() ([]model.MeasurementValue, error)
 }
 
 func New(infLog, errorLog *log.Logger) *Collector {
@@ -23,6 +23,9 @@ func New(infLog, errorLog *log.Logger) *Collector {
 		errorLog: errorLog,
 		readers: []Reader{
 			NewCPUTemp(),
+			NewCPULoadAvg(),
+			NewCPUFreq(),
+			NewMemInfo(),
 		},
 	}
 }
@@ -37,7 +40,7 @@ func (c *Collector) Collect() ([]model.MeasurementValue, error) {
 			c.errorLog.Printf("measurement %s read failed because %s", r.Name(), err)
 			continue
 		}
-		out = append(out, m)
+		out = append(out, m...)
 		hadSuccess = true
 	}
 
